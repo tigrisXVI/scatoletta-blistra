@@ -12,6 +12,10 @@ Un portapillole motorizzato open source per chi fa fatica ad aprire blister e sc
 
 > ⚠️ Non è un dispositivo medico certificato. Non usarlo come unico promemoria per farmaci importanti. Chi lo costruisce lo fa sotto la propria responsabilità.
 
+## Novità della v1.3: più stretta, caroselli che sporgono
+
+La v1.3 è la v1.2 con una **simmetria a mezzo giro**: la ruota sinistra ha stepper e ricarica dall'alto dietro, la destra davanti. Gli stepper sono girati verso il centro e il loro corpo passa sopra l'altra ruota, così il guscio torna largo 52,9 mm (la v1.2 era 64,2) e le cassette escono di 2 mm dai fianchi con una cornice. Il display è davanti, sotto le ruote. Modello in `cad/scatoletta_v13.py`, controlli in `cad/controlli_v13.py` (tutti verdi), file di stampa in [`v13/`](v13/LEGGIMI.md). Visore: [modello 3D v1.3](https://tigrisxvi.github.io/scatoletta-blistra/modello-3d/v13.html).
+
 ## Novità della v1.2: i pezzi veri
 
 La v1.2 è la v1.0 adattata ai componenti comprati: stepper 28BYJ-48 con ULN2003, servo SG90, OLED 0,96", una sola cella di carico, cassette fissate con una vite M2,5, zero delle ruote con un pulsantino finecorsa. Modello in `cad/scatoletta_v12.py`, controlli in `cad/controlli_v12.py` (tutti verdi), file di stampa e ferramenta in [`v12/`](v12/LEGGIMI.md). Visore: [modello 3D v1.2](https://tigrisxvi.github.io/scatoletta-blistra/modello-3d/v12.html).
