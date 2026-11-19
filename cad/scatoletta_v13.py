@@ -24,6 +24,9 @@ from scatoletta_v3 import cil, scatola, cil_x, cil_y, ruota, ccw, a_mesh
 from scatoletta_v10 import N, PASSO, PARETE, R_SPIG, R_TOP, MOD, Z_PIGN_G, Z_CROCE, D_ASSE, Z_TORRE, G_FERMO, stampa, VERSI
 from scatoletta_v12 import K, STEP, FC, RA, OLED, Z_NASTRO, Z_SUONO, D_MOT, A_MOT, doppio_d
 
+# ---- assi e perni: barrette d'acciaio di un lettore DVD (diametro 3-4 mm): i fori si stampano da 2,8 e si allargano col trapano
+D_PILOTA = 2.8
+s10.D_ASSE = D_PILOTA + 0.2       # s10 usa D_ASSE/2 - 0.1 per la ruota (2,8) e D_ASSE/2 per la torretta della cassetta (3,0 -> sotto lo riporto a 2,8)
 # ---- la cassetta "tipo sinistro" ha l'ingresso della ricarica DIETRO (la destra, girata, ce l'ha davanti)
 s10.ANG_RICARICA = 180.0 - 54.0
 # ---- camera dietro, guscio stretto (si cambiano le tabelle della v1.2: questo modulo e la v1.2 non si usano insieme)
@@ -77,9 +80,33 @@ class Modello13(s12.Modello12):
         s = -1 if i == 0 else 1
         return ((-x if i == 1 else x), s * a, self.Z_A + y)
 
+    # ---------------- fori pilota da 2,8 mm per le barrette d'acciaio (si allargano col trapano al diametro vero)
+    def _pos_perno(self, i, phi=0.0):
+        a = s10.ANG_CROCE[self.k][i]; u = a + phi
+        dx, dy = self.C_GEN * math.cos(math.radians(a)), self.C_GEN * math.sin(math.radians(a))
+        return dx + self.R_MAN * math.cos(math.radians(u)), dy + self.R_MAN * math.sin(math.radians(u))
+
+    def croce_driver_locale(self, i, phi=0.0):
+        m = super().croce_driver_locale(i, phi)
+        x, y = self._pos_perno(i, phi)
+        return m + (cil(1.5, -2.3, -0.01, x, y) - cil(D_PILOTA / 2, -3, 1, x, y))
+
+    def _perno_croce(self, i, phi=0.0):
+        x, y = self._pos_perno(i, phi)
+        return cil(D_PILOTA / 2 - 0.01, -2.3, 1.7, x, y)
+
+    def ruota_locale(self):
+        return super().ruota_locale()                              # foro 2,8 (D_ASSE/2 - 0,1)
+
+    def componenti(self):
+        C = super().componenti()
+        C["assi_acciaio"] = sum((self.metti(cil(D_PILOTA / 2 - 0.11, self.Z_COR[0] - 2.3, Z_TORRE + 10.0), sd) for sd in (-1, 1)), Manifold())
+        return C
+
     # ---------------- cassetta con la cornice
     def cassetta_locale(self):
         m = super().cassetta_locale()
+        m += cil(D_PILOTA / 2 + 0.2, self.Z_COR[0] - 2.5, Z_TORRE) - cil(D_PILOTA / 2, self.Z_COR[0] - 3, Z_TORRE + 1)   # torretta: foro 2,8
         z0, z1 = self.Z_FL[1] - 0.01, self.Y_DX + SPORGE - self.Y0
         m += cil(self.R_CASS + 1.0, z0, z1) - cil(self.R_CASS - 0.8, z0 - 1, z1 + 1)          # anello
         m += cil(self.R_CASS + 1.0, z1 - 1.2, z1) - cil(self.R_AN_T + 0.2, z1 - 2, z1 + 1)      # bordo davanti (la ruota si vede dall'oblo')
@@ -217,6 +244,25 @@ class Modello13(s12.Modello12):
         P["17_staffa_alta_dx"] = self.staffa_meta(1)
         return P
 
+    # ---------------- banco di prova di un carosello (il sinistro): parete centrale, piastra dello stepper, finecorsa, blocchetto della vite, culla
+    def banco_prova(self):
+        """Pezzo da stampare per provare il meccanismo prima del guscio: la fetta del corpo attorno alla parete centrale
+        (y da -9,5 a +6: tiene la croce, il finecorsa e la piastra dello stepper sinistro), la culla e il blocchetto della cassetta sinistra,
+        su una base piatta. Ci si montano cassetta, ruota, croce, pignone, stepper e finecorsa veri."""
+        c = self.corpo(); z0 = self.Z_A - 58.0
+        b = c ^ scatola(-100, 100, -9.5, 6.0, z0, 400)
+        culla = (cil_y(self.R_CASS + 2.8, -self.Y_DX, 0.5, 0, self.Z_A) - cil_y(self.R_CASS + 1.4, -40, 40, 0, self.Z_A)) - scatola(-100, 100, -100, 100, self.Z_A - 8, 400)
+        culla -= scatola(-self.APRE - 3.6, self.APRE + 3.6, -100, 100, 0, 400)
+        b += culla ^ scatola(-100, 100, -self.Y_DX + PARETE, 0.5, z0, 400)
+        bl = self.metti(self._blocchetto_locale(), -1)
+        bb = bl.bounding_box()
+        b += Manifold.batch_hull([bl, cil_y(2.0, bb[1], bb[4], (bb[0] + bb[3]) / 2, self.Z_A - math.sqrt(max(0.0, (self.R_CASS + 2.1) ** 2 - ((bb[0] + bb[3]) / 2) ** 2)))])
+        b -= self.metti(self._vuoti_vite_locale(), -1)
+        b -= cil_y(self.R_CASS + 1.4, -40, -1.0, 0, self.Z_A)                                   # la cassetta deve entrare
+        b += scatola(-self.X_HALF, self.X_HALF, -40.0, 30.0, z0 - 4.0, z0 + 0.01)              # base
+        b += scatola(-self.X_HALF, self.X_HALF, -2.5, 2.5, z0, z0 + 12.0) - cil_y(self.R_CASS + 1.4, -40, 40, 0, self.Z_A)   # costola sulla base
+        return b
+
     # ---------------- guscio
     def corpo(self):
         if getattr(self, "_corpo", None) is not None: return self._corpo
@@ -332,6 +378,7 @@ def genera(chiave, cartella):
     for n, m in P.items():
         mesh = a_mesh(m); mesh.export(os.path.join(cartella, "assieme", n + ".stl")); su_piano(mesh, n)
     for n, m in C.items(): a_mesh(m).export(os.path.join(cartella, "componenti", n + ".stl"))
+    su_piano(a_mesh(M.banco_prova()), "00_banco_prova")
     for i, lato in enumerate(("sx", "dx")):
         su_piano(a_mesh(M.croci(perno=False)[i][0]), "14_croce_" + lato)
         su_piano(a_mesh(M.pignoni()[i][0]), "15_pignone_" + lato)

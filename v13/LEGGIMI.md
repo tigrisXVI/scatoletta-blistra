@@ -20,6 +20,21 @@ Corpo 105 × **53** × 218 mm (la v1.2 era larga 64), piede 122 × 112 mm, peso 
 - **Camera dietro:** gli ULN2003 sono più verso il centro (y da -24 a 8), l'HX711 è a destra e l'ESP32-S3 sta **in piedi**, parallelo al fianco destro, tra due mensole con la scanalatura. La presa USB-C resta dietro. Così l'antenna sta a 10 mm dal metallo più vicino.
 - **Cavi:** quelli della ruota destra (stepper e finecorsa) vanno dietro passando sotto il tetto. Attraversano la parete centrale in due fori, sotto il tasto e davanti in alto. Il canale dei cavi dietro è spostato 5,5 mm più indietro (x = -47,5).
 
+## Assi e perni: barrette d'acciaio di un lettore DVD
+
+Al posto delle spine da 6 × 16 e dei perni da 3 × 4 si usano le barrette di guida di un lettore DVD (lunghe 7 cm, diametro 3–4 mm), tagliate con un Dremel o un seghetto:
+2 pezzi da 16 mm per gli assi delle ruote e 2 da 4 mm per i perni delle croci. Tutti i fori sono stampati **da 2,8 mm** e si allargano col trapano:
+
+- **torretta della cassetta:** stesso diametro della barretta (l'asse entra a pressione e non gira);
+- **foro della ruota:** 0,1–0,2 mm più grande della barretta (la ruota deve girare libera);
+- **foro del perno nella croce:** stesso diametro della barretta (entra a pressione).
+
+Il perno della croce entra nelle fessure della ruota, che sono fatte per un perno da **3 mm**: se la barretta è più grossa di 3,1 mm, per il perno serve un altro tondino da 3 mm (per esempio il gambo di una punta da trapano da 3).
+
+## Banco di prova
+
+`00_banco_prova.stl` è la fetta del corpo attorno alla parete centrale (piastra dello stepper sinistro, finecorsa, sostegno della croce, culla e blocchetto della cassetta sinistra) su una base piatta. Serve a provare un carosello completo, con lo stepper e l'Arduino, prima di stampare guscio e cappello. Volume 68 cm³.
+
 ## Ferramenta
 
 Come la v1.2 (`v12/LEGGIMI.md`).
